@@ -1,0 +1,2 @@
+add_library(generators INTERFACE)
+target_include_directories(generators INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
