@@ -1,0 +1,2 @@
+add_library(lazy_sequence INTERFACE)
+target_include_directories(lazy_sequence INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
