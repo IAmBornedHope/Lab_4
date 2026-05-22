@@ -27,6 +27,13 @@ public:
         return size_;
     }
 
+    size_t get_size() const {
+        if (is_infinite()) {
+            throw IndexOutOfRangeException("Нельзя получить бесконечность");
+        }
+        return size_.get_value();
+    }
+
     bool operator==(const Cardinal& cardinal) const {
         if (is_infinite() && cardinal.is_infinite()) {
             return true;
