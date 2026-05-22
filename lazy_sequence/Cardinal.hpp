@@ -62,4 +62,11 @@ public:
     bool operator>=(const Cardinal& cardinal) const {
         return (*this > cardinal) || (*this == cardinal);
     }
+
+    Cardinal operator+(const Cardinal& cardinal) const {
+        if (is_infinite() || cardinal.is_infinite()) {
+            return Cardinal::omega();
+        }
+        return Cardinal(size_.get_value() + cardinal.size_.get_value());
+    }
 };
