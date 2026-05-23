@@ -7,7 +7,8 @@ add_executable(lab4_test
                main.cpp 
                test_Cardinal.cpp
                test_ContGenerator.cpp
-               test_RecGenerator.cpp)
+               test_RecGenerator.cpp
+               test_MapGenerator.cpp)
                
 target_link_libraries(lab4_test 
                       gtest_main)
