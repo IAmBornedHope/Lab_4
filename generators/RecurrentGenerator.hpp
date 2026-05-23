@@ -1,9 +1,19 @@
 #pragma once
+#include <concepts>
 #include <functional>
 #include "../lazy_sequence/Cardinal.hpp"
 #include "IGenerator.hpp"
 
+
+template<typename Container, typename T>
+concept Recurrentable = requires(Container& container, T value, size_t index) {
+    { container.get_length() } -> std::convertible_to<size_t>;
+    { container[index] } -> std::convertible_to<T>;
+    { container.append(value) };
+};
+
 template<typename T, template<typename> class Container>
+requires Recurrentable<Container<T>, T>
 class RecurrentGenerator: public IGenerator<T> {
 private:
     std::function<T(const Container<T>&)> function_;
