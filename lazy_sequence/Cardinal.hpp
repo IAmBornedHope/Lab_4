@@ -5,14 +5,13 @@ class Cardinal {
 private:
     Option<size_t> size_;
 
+    Cardinal() : size_{} {}
+
 public:
-    Cardinal() : size_{0} {}
     Cardinal(size_t size) : size_{size} {}
 
-    static Cardinal omega() {
-        Cardinal cardinal;
-        cardinal.size_ = Option<size_t>();
-        return cardinal;
+    static Cardinal aleph_null() {
+        return Cardinal{};
     }
     
     bool is_finite() const {
@@ -72,7 +71,7 @@ public:
 
     Cardinal operator+(const Cardinal& cardinal) const {
         if (is_infinite() || cardinal.is_infinite()) {
-            return Cardinal::omega();
+            return Cardinal::aleph_null();
         }
         return Cardinal(size_.get_value() + cardinal.size_.get_value());
     }

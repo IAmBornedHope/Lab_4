@@ -2,7 +2,7 @@
 #include "../lazy_sequence/Cardinal.hpp"
 
 TEST(cardinal_constructor, basic_constructor_test) {
-    Cardinal cardinal;
+    Cardinal cardinal(0);
     ASSERT_EQ(cardinal.is_finite(), 1);
     ASSERT_EQ(cardinal.is_infinite(), 0);
     ASSERT_EQ(cardinal.try_get_size().get_value(), 0);
@@ -15,11 +15,11 @@ TEST(cardinal_constructor, size_constructor_test) {
     EXPECT_EQ(cardinal.try_get_size().get_value(), 1);
 }
 
-TEST(cardinal_omega, omega_test) {
-    Cardinal omega = Cardinal::omega();
-    EXPECT_EQ(omega.is_finite(), 0);
-    EXPECT_EQ(omega.is_infinite(), 1);
-    EXPECT_THROW(omega.try_get_size().get_value(), EmptyOptionException);
+TEST(cardinal_aleph_null, aleph_null_test) {
+    Cardinal aleph_null = Cardinal::aleph_null();
+    EXPECT_EQ(aleph_null.is_finite(), 0);
+    EXPECT_EQ(aleph_null.is_infinite(), 1);
+    EXPECT_THROW(aleph_null.try_get_size().get_value(), EmptyOptionException);
 }
 
 
@@ -37,15 +37,15 @@ TEST(cardinal_equal, equal_finite_test) {
 }
 
 TEST(cardinal_equal, equal_infinite_test) {
-    Cardinal omega_1 = Cardinal::omega();
-    Cardinal omega_2 = Cardinal::omega();
-    EXPECT_EQ(omega_1, omega_2);
+    Cardinal aleph_null_1 = Cardinal::aleph_null();
+    Cardinal aleph_null_2 = Cardinal::aleph_null();
+    EXPECT_EQ(aleph_null_1, aleph_null_2);
 }
 
 TEST(cardinal_equal, not_equal_finite_and_infinite_test) {
-    Cardinal omega = Cardinal::omega();
+    Cardinal aleph_null = Cardinal::aleph_null();
     Cardinal cardinal(99999);
-    EXPECT_EQ(omega == cardinal, 0);
+    EXPECT_EQ(aleph_null == cardinal, 0);
 }
 
 
@@ -64,20 +64,20 @@ TEST(cardinal_comparision, finite_less_equal_test) {
 
 TEST(cardinal_comparision, infinite_less_test_1) {
     Cardinal cardinal(10000);
-    Cardinal omega = Cardinal::omega();
-    EXPECT_EQ(cardinal < omega, 1);
+    Cardinal aleph_null = Cardinal::aleph_null();
+    EXPECT_EQ(cardinal < aleph_null, 1);
 }
 
 TEST(cardinal_comparision, infinite_less_test_2) {
     Cardinal cardinal(10000);
-    Cardinal omega = Cardinal::omega();
-    EXPECT_EQ(omega < cardinal, 0);
+    Cardinal aleph_null = Cardinal::aleph_null();
+    EXPECT_EQ(aleph_null < cardinal, 0);
 }
 
 TEST(cardinal_comparision, infinite_less_equal_test) {
-    Cardinal omega_1 = Cardinal::omega();
-    Cardinal omega_2 = Cardinal::omega();
-    EXPECT_EQ(omega_2 < omega_1, 0);
+    Cardinal aleph_null_1 = Cardinal::aleph_null();
+    Cardinal aleph_null_2 = Cardinal::aleph_null();
+    EXPECT_EQ(aleph_null_2 < aleph_null_1, 0);
 }
 
 
@@ -93,24 +93,24 @@ TEST(cardinal_operations, add_finite_test) {
 
 TEST(cardinal_operations, finite_add_infinite_test) {
     Cardinal cardinal(10);
-    Cardinal omega = Cardinal::omega();
-    Cardinal result_1 = cardinal + omega;
-    Cardinal result_2 = cardinal + omega;
+    Cardinal aleph_null = Cardinal::aleph_null();
+    Cardinal result_1 = cardinal + aleph_null;
+    Cardinal result_2 = cardinal + aleph_null;
 
     ASSERT_EQ(result_1.is_infinite(), 1);
     ASSERT_EQ(result_2.is_infinite(), 1);
-    EXPECT_EQ(result_1, Cardinal::omega());
-    EXPECT_EQ(result_2, Cardinal::omega());
+    EXPECT_EQ(result_1, Cardinal::aleph_null());
+    EXPECT_EQ(result_2, Cardinal::aleph_null());
 }
 
 TEST(cardinal_operations, infinite_add_infinite_test) {
-    Cardinal omega_1 = Cardinal::omega();
-    Cardinal omega_2 = Cardinal::omega();
+    Cardinal aleph_null_1 = Cardinal::aleph_null();
+    Cardinal aleph_null_2 = Cardinal::aleph_null();
 
-    Cardinal result = omega_1 + omega_2;
+    Cardinal result = aleph_null_1 + aleph_null_2;
 
     ASSERT_EQ(result.is_infinite(), 1);
-    EXPECT_EQ(result, Cardinal::omega());
+    EXPECT_EQ(result, Cardinal::aleph_null());
 }
 
 
