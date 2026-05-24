@@ -73,6 +73,8 @@ LazySequence<T, Container>& LazySequence<T, Container>::operator=(const LazySequ
     return *this;
 }
 
+
+
 template<typename T, template<typename> class Container>
 T LazySequence<T, Container>::get(Cardinal index) {
     check_cached(index);
@@ -120,4 +122,55 @@ T LazySequence<T, Container>::get_last() {
 template<typename T, template<typename> class Container>
 size_t LazySequence<T, Container>::get_materialized_count() const {
     return cache_.get_length();
+}
+
+template<typename T, template<typename> class Container>
+auto LazySequence<T, Container>::append(T item) const {
+    Container<T> new_elem;
+    new_elem.append(item);
+
+    std::shared_ptr<IGenerator<T>> base_generator;
+
+    auto append_generator = std::make_shared<ContainerGenerator<T, Container>>(new_elem);
+    if (generator_) {
+        base_generator = generator_->clone();
+    }
+    else {
+        base_generator = std::make_shared<ContainerGenerator<T, Container>>(cache_);
+    }
+
+    auto result_generator = std::make_shared<ConcatGenerator<T>>(base_generator, append_generator);
+    return std::make_shared<LazySequence<T, Container>>(Container<T>(), result_generator);
+}
+
+template<typename T, template<typename> class Container>
+auto LazySequence<T, Container>::prepend(T item) const {
+    Container<T> new_elem;
+    new_elem.append(item);
+
+    std::shared_ptr<IGenerator<T>> base_generator;
+
+    auto prepend_generator = std::make_shared<ContainerGenerator<T, Container>>(new_elem);
+    if (generator_) {
+        base_generator = generator_->clone();
+    }
+    else {
+        base_generator = std::make_shared<ContainerGenerator<T, Container>>(cache_);
+    }
+
+    auto result_generator = std::make_shared<ConcatGenerator<T>>(prepend_generator, base_generator);
+    return std::make_shared<LazySequence<T, Container>>(Container<T>(), result_generator);
+}
+
+template<typename T, template<typename> class Container>
+auto LazySequence<T, Container>::insert_at(T item, size_t index) const {
+    auto before_target = take(index);
+    Container<T> new_elem;
+    new_elem.append(item);
+
+    auto insert_sequence = std::make_shared<LazySequence<T, Container>>(new_elem);
+
+    auto after_target = skip(index);
+    return before_target->concat(insert_sequence)->concat(after_target);
+
 }
