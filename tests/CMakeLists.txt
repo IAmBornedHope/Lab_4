@@ -10,7 +10,8 @@ add_executable(lab4_test
                test_RecGenerator.cpp
                test_MapGenerator.cpp
                test_FilterGenerator.cpp
-               test_ConcatGenerator.cpp)
+               test_ConcatGenerator.cpp
+               test_LazySequence.cpp)
                
 target_link_libraries(lab4_test 
                       gtest_main)

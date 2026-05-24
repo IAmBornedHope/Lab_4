@@ -16,7 +16,7 @@ TEST(filter_generator, even_test) {
     auto container = std::make_shared<ContainerGenerator<int, MutableArraySequence>>(sequence);
     auto filter_generator = std::make_shared<FilterGenerator<int>>(container, predicate);
 
-    EXPECT_EQ(filter_generator->size().is_infinite(), 1);
+    EXPECT_EQ(filter_generator->size().get_size(), 3);
     EXPECT_EQ(filter_generator->get_next(), 10);
     EXPECT_EQ(filter_generator->get_next(), 20);
     EXPECT_EQ(filter_generator->get_next(), 30);
