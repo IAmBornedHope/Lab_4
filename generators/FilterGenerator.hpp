@@ -31,7 +31,15 @@ public:
     }
 
     Cardinal size() const override {
-        return Cardinal::aleph_null();
+        Cardinal base_size = base_->size();
+        if (base_size.is_infinite()) {
+            return Cardinal::aleph_null();
+        }
+        return base_size;
+    }
+
+    std::shared_ptr<IGenerator<T>> clone() const override {
+        return std::make_shared<FilterGenerator<T>>(base_->clone(), predicate_);
     }
     
 

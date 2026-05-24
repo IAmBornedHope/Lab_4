@@ -44,6 +44,20 @@ public:
 
         return Cardinal(size_1.get_size() + size_2.get_size());
     }
+
+    std::shared_ptr<IGenerator<T>> clone() const override {
+        std::shared_ptr<IGenerator<T>> first_cloned = nullptr;
+        std::shared_ptr<IGenerator<T>> second_cloned = nullptr;
+
+        if (first_) {
+            first_cloned = first_->clone();
+        }
+        if (second_) {
+            second_cloned = second_->clone();
+        }
+
+        return std::make_shared<ConcatGenerator<T>>(first_cloned, second_cloned);
+    }
     
 
 };

@@ -24,4 +24,8 @@ public:
     Cardinal size() const override {
         return base_->size();
     }
+
+    std::shared_ptr<IGenerator<U>> clone() const override {
+        return std::make_shared<MapGenerator<T, U>>(base_->clone(), mapper_);
+    }
 };

@@ -1,6 +1,6 @@
 #pragma once
 #include "IGenerator.hpp"
-#include "libs/Lab_3/exceptions/Exceptions.hpp"
+#include "../libs/Lab_3/exceptions/Exceptions.hpp"
 
 template<typename Container, typename T>
 concept Indexable = requires(Container& container, size_t index) {
@@ -35,6 +35,12 @@ public:
 
     Cardinal size() const override {
         return Cardinal(items_.get_length());
+    }
+
+    std::shared_ptr<IGenerator<T>> clone() const override {
+        auto cloned = std::make_shared<ContainerGenerator<T, Container>>(items_);
+        cloned->current_ = this->current_;
+        return cloned;
     }
 
 };

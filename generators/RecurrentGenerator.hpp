@@ -41,4 +41,8 @@ public:
     Cardinal size() const override {
         return Cardinal::aleph_null();
     }
+
+    std::shared_ptr<IGenerator<T>> clone() const override {
+        return std::make_shared<RecurrentGenerator<T, Container>>(function_, cache_);
+    }
 };

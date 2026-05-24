@@ -16,4 +16,6 @@ public:
         return Option<T>();
     }
 
+    virtual std::shared_ptr<IGenerator<T>> clone() const = 0;
+
 };
