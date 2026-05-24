@@ -43,6 +43,6 @@ public:
     }
 
     std::shared_ptr<IGenerator<T>> clone() const override {
-        return std::make_shared<RecurrentGenerator<T, Container>>(function_, cache_);
+        return std::make_shared<RecurrentGenerator<T, Container>>(function_, Container<T>());
     }
 };
