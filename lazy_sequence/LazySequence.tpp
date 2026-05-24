@@ -73,3 +73,51 @@ LazySequence<T, Container>& LazySequence<T, Container>::operator=(const LazySequ
     return *this;
 }
 
+template<typename T, template<typename> class Container>
+T LazySequence<T, Container>::get(Cardinal index) {
+    check_cached(index);
+    return cache_[index.get_size()];
+}
+
+template<typename T, template<typename> class Container>
+Container<T> LazySequence<T, Container>::get_cache() const {
+    return cache_;
+}
+
+template<typename T, template<typename> class Container>
+T LazySequence<T, Container>::get_first() {
+    return get(Cardinal(0));
+}
+
+template<typename T, template<typename> class Container>
+Cardinal LazySequence<T, Container>::get_length() const {
+    if (generator_) {
+        return generator_->size();
+    }
+    return Cardinal(cache_.get_length());
+}
+
+template<typename T, template<typename> class Container>
+T LazySequence<T, Container>::get_last() {
+    Cardinal length = get_length();
+    if (length.is_infinite()) {
+        throw IndexOutOfRangeException("У бесконечной последовательности нет последнего элемента");
+    }
+
+    if (generator_) {
+        while (generator_->has_next()) {
+            cache_.append(generator_->get_next());
+        }
+        generator_ = nullptr;
+    }
+    if (cache_.get_length() == 0) {
+        throw EmptyListException();
+    }
+
+    return cache_[cache_.get_length() - 1];
+}
+
+template<typename T, template<typename> class Container>
+size_t LazySequence<T, Container>::get_materialized_count() const {
+    return cache_.get_length();
+}
