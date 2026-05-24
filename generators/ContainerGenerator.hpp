@@ -13,7 +13,7 @@ requires Indexable<Container<T>, T>
 class ContainerGenerator: public IGenerator<T> {
 private:
     Container<T> items_;
-    size_t current_;
+    size_t current_ = 0;
 
 public:
     ContainerGenerator(const Container<T>& container) : items_{container}, current_{0} {}
@@ -39,7 +39,6 @@ public:
 
     std::shared_ptr<IGenerator<T>> clone() const override {
         auto cloned = std::make_shared<ContainerGenerator<T, Container>>(items_);
-        cloned->current_ = this->current_;
         return cloned;
     }
 
