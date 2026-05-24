@@ -19,6 +19,7 @@ public:
     LazySequence(const Container<T>& cache);
     LazySequence(const Container<T>& cache, std::shared_ptr<IGenerator<T>> generator);
     LazySequence(const LazySequence<T, Container>& lazy_sequence);
+    LazySequence(std::shared_ptr<IGenerator<T>> generator);
 
     LazySequence<T, Container>& operator=(const LazySequence<T, Container>& lazy_sequence);
 

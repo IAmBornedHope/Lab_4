@@ -1,0 +1,75 @@
+#include "LazySequence.hpp"
+#include "../libs/Lab_3/array_sequence/MutableArraySequence.hpp"
+#include "../generators/RecurrentGenerator.hpp"
+#include "../generators/ContainerGenerator.hpp"
+#include "../generators/MapGenerator.hpp"
+#include "../generators/ConcatGenerator.hpp"
+#include "../generators/FilterGenerator.hpp"
+#include "../generators/SkipGenerator.hpp"
+#include "../generators/TakeGenerator.hpp"
+
+template<typename T, template<typename> class Container>
+void LazySequence<T, Container>::check_cached(Cardinal index) {
+    if (index.is_infinite()) {
+        throw IndexOutOfRangeException("Нельзя обратиться по бесконечному индексу");
+    }
+    size_t num_index = index.get_size();
+    if (num_index < cache_.get_length()) {
+        return;
+    }
+
+    if (!generator_) {
+        throw InvalidArgumentException("Нет генератора");
+    }
+
+    while (cache_.get_length() <= num_index) {
+        if (!generator_->has_next()) {
+            generator_ = nullptr;
+            break;
+        }
+        cache_.append(generator_->get_next());
+    }
+}
+
+template<typename T, template<typename> class Container>
+LazySequence<T, Container>::LazySequence() : cache_{}, generator_{nullptr} {}
+
+template<typename T, template<typename> class Container>
+LazySequence<T, Container>::LazySequence(T* items, size_t count) : cache_{}, generator_{nullptr} {
+    Container<T> temp(items, count);
+    generator_ = std::make_shared<ContainerGenerator<T, Container>>(temp);
+}
+
+template<typename T, template<typename> class Container>
+LazySequence<T, Container>::LazySequence(const Container<T>& cache) : cache_{cache}, generator_{nullptr} {}
+
+template<typename T, template<typename> class Container>
+LazySequence<T, Container>::LazySequence(const Container<T>& cache, std::shared_ptr<IGenerator<T>> generator)
+    : cache_{cache}, generator_{generator} {}
+
+template<typename T, template<typename> class Container>
+LazySequence<T, Container>::LazySequence(const LazySequence<T, Container>& lazy_sequence) : cache_{lazy_sequence.cache_} {
+    if (lazy_sequence.generator_) {
+        generator_ = lazy_sequence.generator_->clone();
+    }
+}
+
+template<typename T, template<typename> class Container>
+LazySequence<T, Container>::LazySequence(std::shared_ptr<IGenerator<T>> generator)
+    : cache_{}, generator_{generator} {
+}
+
+template<typename T, template<typename> class Container>
+LazySequence<T, Container>& LazySequence<T, Container>::operator=(const LazySequence& lazy_sequence) {
+    if (this != &lazy_sequence) {
+        cache_ = lazy_sequence.cache_;
+        if (lazy_sequence.generator_) {
+            generator_ = lazy_sequence.generator_->clone();
+        }
+        else {
+            generator_ = nullptr;
+        }
+    }
+    return *this;
+}
+
