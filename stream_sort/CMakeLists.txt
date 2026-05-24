@@ -1,0 +1,2 @@
+add_library(stream_sort INTERFACE)
+target_include_directories(stream_sort INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
