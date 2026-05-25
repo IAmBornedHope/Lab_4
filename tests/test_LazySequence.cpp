@@ -267,3 +267,38 @@ TEST(lazy_operations_test, finite_subsequence_test) {
     EXPECT_EQ(sub->get_materialized_count(), 1);
     EXPECT_EQ(sequence->get_materialized_count(), 0);
 }
+
+
+
+
+TEST(lazy_insertions, finite_append_test) {
+    int array[] = {10, 15, 20, 25, 30, 35, 40};
+    auto sequence = std::make_shared<LazyInt>(array, 7);
+
+    auto result = sequence->append(100);
+
+    ASSERT_EQ(sequence->get_materialized_count(), 0);
+    ASSERT_EQ(result->get_materialized_count(), 0);
+
+    EXPECT_EQ(result->get_length().get_size(), 8);
+    EXPECT_EQ(result->get(0), 10);
+    EXPECT_EQ(result->get_last(), 100);
+    EXPECT_EQ(result->get_materialized_count(), 8);
+    EXPECT_EQ(sequence->get_materialized_count(), 0);
+}
+
+TEST(lazy_operations_test, infinite_append_test) {
+    MutableArraySequence<int> cache;
+    auto generator = std::make_shared<RecurrentGenerator<int, MutableArraySequence>>(counter, cache);
+    auto sequence = std::make_shared<LazyInt>(cache, generator);
+
+    auto result = sequence->append(100);
+
+    ASSERT_EQ(result->get_length().is_infinite(), 1);
+    EXPECT_EQ(result->get_materialized_count(), 0);
+
+    EXPECT_EQ(result->get(0), 1);
+    EXPECT_THROW(result->get_last(), IndexOutOfRangeException);
+    EXPECT_EQ(result->get_materialized_count(), 1);
+    EXPECT_EQ(sequence->get_materialized_count(), 0);
+}
