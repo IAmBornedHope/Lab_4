@@ -1,5 +1,5 @@
 #pragma once
-#include "libs/Lab_3/exceptions/Option.hpp"
+#include "../libs/Lab_3/exceptions/Option.hpp"
 
 class Cardinal {
 private:
@@ -35,7 +35,7 @@ public:
 
     bool operator==(const Cardinal& cardinal) const {
         if (is_infinite() && cardinal.is_infinite()) {
-            return true;
+            return false;
         }
         if (is_infinite() || cardinal.is_infinite()) {
             return false;
