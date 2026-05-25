@@ -167,3 +167,72 @@ TEST(lazy_operations_test, infinite_skip_test) {
     EXPECT_EQ(skipped->get_materialized_count(), 1);
     EXPECT_EQ(sequence->get_materialized_count(), 0);
 }
+
+TEST(lazy_operations_test, finite_take_test) {
+
+    int array[] = {10, 15, 20, 25, 30, 35, 40};
+    auto sequence = std::make_shared<LazyInt>(array, 7);
+
+    auto skipped = sequence->take(3);
+
+    ASSERT_EQ(sequence->get_materialized_count(), 0);
+    ASSERT_EQ(skipped->get_materialized_count(), 0);
+
+    EXPECT_EQ(skipped->get_length().get_size(), 3);
+    EXPECT_EQ(skipped->get(0), 10);
+    EXPECT_EQ(skipped->get_materialized_count(), 1);
+    EXPECT_EQ(sequence->get_materialized_count(), 0);
+
+}
+
+TEST(lazy_operations_test, infinite_take_test) {
+    MutableArraySequence<int> cache;
+    auto generator = std::make_shared<RecurrentGenerator<int, MutableArraySequence>>(counter, cache);
+    auto sequence = std::make_shared<LazyInt>(cache, generator);
+    auto skipped = sequence->take(5);
+
+    ASSERT_EQ(sequence->get_length().is_infinite(), 1);
+    EXPECT_EQ(sequence->get_materialized_count(), 0);
+    
+    EXPECT_EQ(skipped->get_length().is_infinite(), 0);
+    EXPECT_EQ(skipped->get_materialized_count(), 0);
+
+    EXPECT_EQ(skipped->get(Cardinal(0)), 1);
+    EXPECT_EQ(skipped->get_materialized_count(), 1);
+    EXPECT_EQ(sequence->get_materialized_count(), 0);
+}
+
+TEST(lazy_operations_test, finite_concat_test) {
+    int array[] = {10, 15, 20, 25, 30, 35, 40};
+    auto first = std::make_shared<LazyInt>(array, 7);
+    auto second = std::make_shared<LazyInt>(array, 3);
+
+    auto result = first->concat(second);
+
+    ASSERT_EQ(first->get_materialized_count(), 0);
+    ASSERT_EQ(result->get_materialized_count(), 0);
+
+    EXPECT_EQ(result->get_length().get_size(), 10);
+    EXPECT_EQ(result->get(0), 10);
+    EXPECT_EQ(result->get_materialized_count(), 1);
+    EXPECT_EQ(first->get_materialized_count(), 0);
+}
+
+TEST(lazy_operations_test, infinite_concat_test) {
+    MutableArraySequence<int> cache_1;
+    MutableArraySequence<int> cache_2;
+    auto generator = std::make_shared<RecurrentGenerator<int, MutableArraySequence>>(counter, cache_1);
+    auto generator_2 = std::make_shared<RecurrentGenerator<int, MutableArraySequence>>(counter, cache_2);
+    auto first = std::make_shared<LazyInt>(cache_1, generator);
+    auto second = std::make_shared<LazyInt>(cache_2, generator_2);
+
+    auto result = first->concat(second);
+
+    ASSERT_EQ(result->get_length().is_infinite(), 1);
+    EXPECT_EQ(result->get_materialized_count(), 0);
+
+    EXPECT_EQ(result->get(Cardinal(0)), 1);
+    EXPECT_THROW(result->get_last(), IndexOutOfRangeException);
+    EXPECT_EQ(result->get_materialized_count(), 1);
+    EXPECT_EQ(first->get_materialized_count(), 0);
+}
