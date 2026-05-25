@@ -11,6 +11,7 @@ private:
 
 public:
     LazyInputStream(std::shared_ptr<LazySequence<T, Container>> sequence) : sequence_{sequence} {}
+    LazyInputStream(const Container<T>& container) : sequence_{std::make_shared<LazySequence<T, Container>>(container)} {}
 
     bool has_next() const override {
         if (!sequence_) {
