@@ -236,3 +236,34 @@ TEST(lazy_operations_test, infinite_concat_test) {
     EXPECT_EQ(result->get_materialized_count(), 1);
     EXPECT_EQ(first->get_materialized_count(), 0);
 }
+
+TEST(lazy_operations_test, infinite_subsequence_test) {
+    MutableArraySequence<int> cache;
+    auto generator = std::make_shared<RecurrentGenerator<int, MutableArraySequence>>(counter, cache);
+    auto sequence = std::make_shared<LazyInt>(cache, generator);
+
+    auto sub = sequence->get_subsequence(0, 3);
+
+    ASSERT_EQ(sub->get_length().get_size(), 4);
+    EXPECT_EQ(sub->get_materialized_count(), 0);
+
+    EXPECT_EQ(sub->get(Cardinal(0)), 1);
+    EXPECT_EQ(sub->get_last(), 4);
+    EXPECT_EQ(sub->get_materialized_count(), 4);
+    EXPECT_EQ(sequence->get_materialized_count(), 0);
+}
+
+TEST(lazy_operations_test, finite_subsequence_test) {
+    int array[] = {10, 15, 20, 25, 30, 35, 40};
+    auto sequence = std::make_shared<LazyInt>(array, 7);
+
+    auto sub = sequence->get_subsequence(0, 3);
+
+    ASSERT_EQ(sequence->get_materialized_count(), 0);
+    ASSERT_EQ(sub->get_materialized_count(), 0);
+
+    EXPECT_EQ(sub->get_length().get_size(), 4);
+    EXPECT_EQ(sub->get(0), 10);
+    EXPECT_EQ(sub->get_materialized_count(), 1);
+    EXPECT_EQ(sequence->get_materialized_count(), 0);
+}
