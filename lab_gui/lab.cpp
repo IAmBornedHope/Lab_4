@@ -15,7 +15,8 @@ LabFrame::LabFrame() : wxFrame(nullptr, wxID_ANY, wxString::FromUTF8("Лабор
 
     left_sizer->Add(new wxStaticLine(main_panel), 0, wxEXPAND | wxALL, 10);
 
-    wxStaticText* param_title = new wxStaticText(main_panel, wxID_ANY, wxString::FromUTF8("N"));
+    // Создание последовательностей
+    wxStaticText* param_title = new wxStaticText(main_panel, wxID_ANY, wxString::FromUTF8("Новая последовательность (N):"));
     left_sizer->Add(param_title, 0, wxLEFT | wxTOP, 5);
     input_param = new wxTextCtrl(main_panel, wxID_ANY, "10");
     input_param->SetHint(wxString::FromUTF8("Введите целое число"));
@@ -31,7 +32,69 @@ LabFrame::LabFrame() : wxFrame(nullptr, wxID_ANY, wxString::FromUTF8("Лабор
 
     left_sizer->Add(new wxStaticLine(main_panel), 0, wxEXPAND | wxALL, 10);
 
-    button_materialize = new wxButton(main_panel, wxID_ANY, wxString::FromUTF8("Получить N"));
+    // Вставка и очистка
+    left_sizer->Add(new wxStaticText(main_panel, wxID_ANY, wxString::FromUTF8("Вставить в конец")), 0, wxLEFT | wxTOP, 5);
+    input_append_value = new wxTextCtrl(main_panel, wxID_ANY, "");
+    input_append_value->SetHint(wxString::FromUTF8("Значение"));
+    left_sizer->Add(input_append_value, 0, wxEXPAND | wxALL, 5);
+
+    button_append = new wxButton(main_panel, wxID_ANY, "Append");
+    //button_append->Bind(wxEVT_BUTTON, &LabFrame::on_append, this);
+    left_sizer->Add(button_append, 0, wxEXPAND | wxALL, 5);
+
+    button_clear = new wxButton(main_panel, wxID_ANY, "Clear");
+    //button_clear->Bind(wxEVT_BUTTON, &LabFrame::on_clear, this);
+    left_sizer->Add(button_clear, 0, wxEXPAND | wxALL, 5);
+
+    left_sizer->Add(new wxStaticLine(main_panel), 0, wxEXPAND | wxLEFT | wxRIGHT, 5);
+
+    // Конкатенация
+    left_sizer->Add(new wxStaticText(main_panel, wxID_ANY, wxString::FromUTF8("Цель для конкатенации:")), 0, wxLEFT | wxTOP, 5);
+
+    target_selector = new wxComboBox(main_panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0, nullptr, wxCB_READONLY);
+    //target_selector->Bind(wxEVT_COMBOBOX, &LabFrame::on_select_target, this);
+    left_sizer->Add(target_selector, 0, wxEXPAND | wxALL, 5);
+
+    button_concat = new wxButton(main_panel, wxID_ANY, "Concat");
+    //button_concat->Bind(wxEVT_BUTTON, &LabFrame::on_concat, this);
+    left_sizer->Add(button_concat, 0, wxEXPAND | wxALL, 5);
+
+    left_sizer->Add(new wxStaticLine(main_panel), 0, wxEXPAND | wxLEFT | wxRIGHT, 5);
+
+    // Сетка мап-скип-тейк
+    left_sizer->Add(new wxStaticText(main_panel, wxID_ANY, wxString::FromUTF8("Сколько взять/пропустить?")), 0, wxLEFT | wxTOP, 5);
+
+    input_take_skip_n = new wxTextCtrl(main_panel, wxID_ANY, "");
+    left_sizer->Add(input_take_skip_n, 0, wxEXPAND | wxALL, 5);
+
+    button_grid = new wxGridSizer(2, 2, 5, 5);
+    
+    button_take = new wxButton(main_panel, wxID_ANY, "Take");
+    //button_take->Bind(wxEVT_BUTTON, &LabFrame::on_take, this);
+    button_grid->Add(button_take, 1, wxEXPAND);
+
+    button_skip = new wxButton(main_panel, wxID_ANY, "Skip");
+    //button_skip->Bind(wxEVT_BUTTON, &LabFrame::on_skip, this);
+    button_grid->Add(button_skip, 1, wxEXPAND);
+
+    button_map = new wxButton(main_panel, wxID_ANY, "Map");
+    //button_map->Bind(wxEVT_BUTTON, &LabFrame::on_map, this);
+    button_grid->Add(button_map, 1, wxEXPAND);
+
+    button_where = new wxButton(main_panel, wxID_ANY, "Where");
+    //button_where->Bind(wxEVT_BUTTON, &LabFrame::on_where, this);
+    button_grid->Add(button_where, 1, wxEXPAND);
+
+    left_sizer->Add(button_grid, 0, wxEXPAND | wxALL, 5);
+
+    left_sizer->Add(new wxStaticLine(main_panel), 0, wxEXPAND | wxLEFT | wxRIGHT, 5);
+
+    // Материализация
+    left_sizer->Add(new wxStaticText(main_panel, wxID_ANY, wxString::FromUTF8("Материализовать первые M")), 0, wxLEFT | wxTOP, 5);
+    input_materialize_n = new wxTextCtrl(main_panel, wxID_ANY, "");
+    left_sizer->Add(input_materialize_n, 0, wxEXPAND | wxALL, 5);
+
+    button_materialize = new wxButton(main_panel, wxID_ANY, wxString::FromUTF8("Материализовать"));
     button_materialize->Bind(wxEVT_BUTTON, &LabFrame::on_materialize, this);
     left_sizer->Add(button_materialize, 0, wxEXPAND | wxALL, 5);
 
@@ -43,6 +106,7 @@ LabFrame::LabFrame() : wxFrame(nullptr, wxID_ANY, wxString::FromUTF8("Лабор
 
     main_sizer->Add(left_sizer, 0, wxEXPAND | wxALL, 10);
 
+    // окно вывода
     output_list_box = new wxListBox(main_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, wxLB_SINGLE | wxHSCROLL);
     output_list_box->SetFont(wxFont(14, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Consolas"));
     main_sizer->Add(output_list_box, 1, wxEXPAND | wxALL, 10);
