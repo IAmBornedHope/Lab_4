@@ -1,10 +1,16 @@
 #include <gtest/gtest.h>
+#include <fstream>
+#include <cstdio>
 #include "../lazy_sequence/LazySequence.hpp"
 #include "../generators/ContainerGenerator.hpp"
 #include "../streams/LazyInputStream.hpp"
 #include "../streams/SequenceOutputStream.hpp"
 #include "../streams/SequenceInputStream.hpp"
+#include "../streams/StringInputStream.hpp"
+#include "../streams/FileInputStream.hpp"
 #include "../streams/StreamInputStream.hpp"
+#include "../streams/FileOutputStream.hpp"
+#include "../streams/StreamOutputStream.hpp"
 
 auto counter_function = [](const MutableArraySequence<int>& sequence) -> int {
     if (sequence.get_length() == 0) {
@@ -75,4 +81,75 @@ TEST(stream_input_stream, stream_from_stream_test) {
     EXPECT_EQ(new_stream.read(), 5);
     ASSERT_EQ(new_stream.has_next(), 0);
 
+}
+
+TEST(string_input_stream, string_input_int_test) {
+    auto stream = std::make_shared<StringInputStream<int>>("1 2 3", Deserializers::int_deserializer(), " ");
+
+    ASSERT_EQ(stream->has_next(), 1);
+    EXPECT_EQ(stream->read(), 1);
+    EXPECT_EQ(stream->read(), 2);
+    EXPECT_EQ(stream->read(), 3);
+    ASSERT_EQ(stream->has_next(), 0);
+}
+
+TEST(string_input_stream, string_input_double_test) {
+    auto stream = std::make_shared<StringInputStream<double>>("1.5, 2.5, 3.5", Deserializers::double_deserializer(), ", ");
+
+    ASSERT_EQ(stream->has_next(), 1);
+    EXPECT_NEAR(stream->read(), 1.5, 1e-6);
+    EXPECT_NEAR(stream->read(), 2.5, 1e-6);
+    EXPECT_NEAR(stream->read(), 3.5, 1e-6);
+    ASSERT_EQ(stream->has_next(), 0);
+}
+
+TEST(file_input_stream, stream_from_file_int_test) {
+
+    const char* filename = "test_int_space.txt";
+    std::ofstream out(filename);
+    out << "1 2 3 4 5";
+    out.close();
+
+
+    auto stream = std::make_shared<FileInputStream<int>>(filename, Deserializers::int_deserializer(), " ");
+    ASSERT_EQ(stream->has_next(), 1);
+    EXPECT_EQ(stream->read(), 1);
+    EXPECT_EQ(stream->read(), 2);
+    EXPECT_EQ(stream->read(), 3);
+    EXPECT_EQ(stream->read(), 4);
+    EXPECT_EQ(stream->read(), 5);
+    ASSERT_EQ(stream->has_next(), 0);
+
+    std::remove(filename);
+}
+
+TEST(file_input_stream, stream_from_file_double_test) {
+
+    const char* filename = "test_double.txt";
+    std::ofstream out(filename);
+    out << "1.5, 2.5, 3.5";
+    out.close();
+
+    auto stream = std::make_shared<FileInputStream<double>>(filename, Deserializers::double_deserializer(), ", ");
+    ASSERT_EQ(stream->has_next(), 1);
+    EXPECT_NEAR(stream->read(), 1.5, 1e-9);
+    EXPECT_NEAR(stream->read(), 2.5, 1e-9);
+    EXPECT_NEAR(stream->read(), 3.5, 1e-9);
+    ASSERT_EQ(stream->has_next(), 0);
+
+    std::remove(filename);
+}
+
+TEST(stream_output_stream, stream_from_sequence_out_stream_test) {
+    auto sequence = std::make_shared<MutableArraySequence<int>>();
+    auto out = std::make_shared<SequenceOutputStream<int>>(sequence);
+    
+    auto stream = std::make_shared<StreamOutputStream<int>>(out);
+
+    stream->write(100);
+    stream->write(200);
+
+    EXPECT_EQ(sequence->get_length(), 2);
+    EXPECT_EQ(sequence->get(0), 100);
+    EXPECT_EQ(sequence->get(1), 200);
 }
