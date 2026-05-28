@@ -43,7 +43,7 @@ LabFrame::LabFrame() : wxFrame(nullptr, wxID_ANY, wxString::FromUTF8("Лабор
     left_sizer->Add(button_append, 0, wxEXPAND | wxALL, 5);
 
     button_clear = new wxButton(main_panel, wxID_ANY, "Clear");
-    //button_clear->Bind(wxEVT_BUTTON, &LabFrame::on_clear, this);
+    button_clear->Bind(wxEVT_BUTTON, &LabFrame::on_clear, this);
     left_sizer->Add(button_clear, 0, wxEXPAND | wxALL, 5);
 
     left_sizer->Add(new wxStaticLine(main_panel), 0, wxEXPAND | wxLEFT | wxRIGHT, 5);
