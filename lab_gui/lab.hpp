@@ -2,6 +2,7 @@
 #include <wx/wx.h>
 #include <wx/listbox.h>
 #include <wx/statline.h>
+#include <wx/spinctrl.h>
 #include <string>
 #include <memory>
 #include <algorithm>
@@ -38,10 +39,10 @@ private:
     
     wxGridSizer* button_grid;
     
-    wxTextCtrl* input_param;
-    wxTextCtrl* input_append_value;
-    wxTextCtrl* input_take_skip_n;
-    wxTextCtrl* input_materialize_n;
+    wxSpinCtrl* spin_create;
+    wxSpinCtrl* spin_take_skip;
+    wxSpinCtrl* spin_materialize;
+    wxSpinCtrl* spin_append;
     
     wxListBox* output_list_box; 
     wxStaticText* status_label;
@@ -65,9 +66,7 @@ private:
     void update_concat();
     
     void add_sequence_to_list(const std::shared_ptr<IntLazy>& new_seq);
-    int get_n();
-    int get_append_value();
-
+    
     std::shared_ptr<IntLazy>& get_active_sequence();
     std::shared_ptr<IntLazy>& get_target_sequence();
 };

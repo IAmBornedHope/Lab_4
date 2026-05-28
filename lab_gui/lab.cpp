@@ -18,9 +18,8 @@ LabFrame::LabFrame() : wxFrame(nullptr, wxID_ANY, wxString::FromUTF8("Лабор
     // Создание последовательностей
     wxStaticText* param_title = new wxStaticText(main_panel, wxID_ANY, wxString::FromUTF8("Новая последовательность (N):"));
     left_sizer->Add(param_title, 0, wxLEFT | wxTOP, 5);
-    input_param = new wxTextCtrl(main_panel, wxID_ANY, "10");
-    input_param->SetHint(wxString::FromUTF8("Введите целое число"));
-    left_sizer->Add(input_param, 0, wxEXPAND | wxALL, 5);
+    spin_create = new wxSpinCtrl(main_panel, wxID_ANY, wxT("10"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100000, 10);
+    left_sizer->Add(spin_create, 0, wxEXPAND | wxALL, 5);
 
     button_create_finite = new wxButton(main_panel, wxID_ANY, wxString::FromUTF8("Конечная [1..N]"));
     button_create_finite->Bind(wxEVT_BUTTON, &LabFrame::on_create_finite, this);
@@ -34,9 +33,8 @@ LabFrame::LabFrame() : wxFrame(nullptr, wxID_ANY, wxString::FromUTF8("Лабор
 
     // Вставка и очистка
     left_sizer->Add(new wxStaticText(main_panel, wxID_ANY, wxString::FromUTF8("Вставить в конец")), 0, wxLEFT | wxTOP, 5);
-    input_append_value = new wxTextCtrl(main_panel, wxID_ANY, "");
-    input_append_value->SetHint(wxString::FromUTF8("Значение"));
-    left_sizer->Add(input_append_value, 0, wxEXPAND | wxALL, 5);
+    spin_append = new wxSpinCtrl(main_panel, wxID_ANY, wxT("10"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, INT_MIN, INT_MAX, 0);
+    left_sizer->Add(spin_append, 0, wxEXPAND | wxALL, 5);
 
     button_append = new wxButton(main_panel, wxID_ANY, "Append");
     button_append->Bind(wxEVT_BUTTON, &LabFrame::on_append, this);
@@ -64,8 +62,8 @@ LabFrame::LabFrame() : wxFrame(nullptr, wxID_ANY, wxString::FromUTF8("Лабор
     // Сетка мап-скип-тейк
     left_sizer->Add(new wxStaticText(main_panel, wxID_ANY, wxString::FromUTF8("Сколько взять/пропустить?")), 0, wxLEFT | wxTOP, 5);
 
-    input_take_skip_n = new wxTextCtrl(main_panel, wxID_ANY, "");
-    left_sizer->Add(input_take_skip_n, 0, wxEXPAND | wxALL, 5);
+    spin_take_skip = new wxSpinCtrl(main_panel, wxID_ANY, wxT("10"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100000, 3);
+    left_sizer->Add(spin_take_skip, 0, wxEXPAND | wxALL, 5);
 
     button_grid = new wxGridSizer(2, 2, 5, 5);
     
@@ -91,8 +89,8 @@ LabFrame::LabFrame() : wxFrame(nullptr, wxID_ANY, wxString::FromUTF8("Лабор
 
     // Материализация
     left_sizer->Add(new wxStaticText(main_panel, wxID_ANY, wxString::FromUTF8("Материализовать первые M")), 0, wxLEFT | wxTOP, 5);
-    input_materialize_n = new wxTextCtrl(main_panel, wxID_ANY, "");
-    left_sizer->Add(input_materialize_n, 0, wxEXPAND | wxALL, 5);
+    spin_materialize = new wxSpinCtrl(main_panel, wxID_ANY, wxT("10"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100000, 5);
+    left_sizer->Add(spin_materialize, 0, wxEXPAND | wxALL, 5);
 
     button_materialize = new wxButton(main_panel, wxID_ANY, wxString::FromUTF8("Материализовать"));
     button_materialize->Bind(wxEVT_BUTTON, &LabFrame::on_materialize, this);
@@ -215,14 +213,6 @@ std::shared_ptr<IntLazy>& LabFrame::get_target_sequence() {
     return sequences.get_reference(target_id);
 }
 
-int LabFrame::get_n() {
-    long value;
-    if (!input_param->GetValue().ToLong(&value)) {
-        return 10;
-    }
-    return static_cast<int>(value);
-}
-
 void LabFrame::update_status() {
     auto sequence = get_active_sequence();
     Cardinal length = sequence->get_length();
@@ -247,15 +237,28 @@ void LabFrame::update_operations() {
     if (!is_infinite) {
         if (length.get_size() == 0) {
             button_clear->Disable();
+            button_materialize->Disable();
+            spin_materialize->Disable();
+            spin_take_skip->Disable();
+            button_take->Disable();
+            button_skip->Disable();
+            button_map->Disable();
+            button_where->Disable();
+        
         }
         else {
             button_clear->Enable();
+            button_materialize->Enable();
+            spin_materialize->Enable();
+            spin_take_skip->Enable();
+            button_take->Enable();
+            button_skip->Enable();
+            button_map->Enable();
+            button_where->Enable();
+            
         }
     }
-    button_take->Enable();
-    button_skip->Enable();
-    button_map->Enable();
-    button_where->Enable();
+
 }
 
 void LabFrame::update_concat() {
@@ -268,10 +271,8 @@ void LabFrame::update_concat() {
 }
 
 void LabFrame::on_create_finite(wxCommandEvent& event) {
-    int n = get_n();
-    if (n < 0) {
-        n = 10;
-    }
+    int n = spin_create->GetValue();
+
     auto array = std::make_shared<MutableArraySequence<int>>();
     for(size_t count = 0; count < n; ++count) {
         array->append(count);
@@ -297,16 +298,8 @@ void LabFrame::on_create_infinite(wxCommandEvent& event) {
     add_sequence_to_list(infinite_sequence);
 }
 
-int LabFrame:: get_append_value() {
-    int value;
-    if (!input_append_value->GetValue().ToInt(&value)) {
-        return 0;
-    }
-    return value;
-}
-
 void LabFrame::on_append(wxCommandEvent& event) {
-    int value = get_append_value();
+    int value = spin_append->GetValue();
     auto sequence = get_active_sequence();
 
     auto new_elem = std::make_shared<MutableArraySequence<int>>();
@@ -315,8 +308,7 @@ void LabFrame::on_append(wxCommandEvent& event) {
     auto temp_sequence = std::make_shared<IntLazy>(generator);
 
     sequences.get_reference(current_sequence_id) = sequence->concat(temp_sequence);
-    input_append_value->SelectAll();
-    input_append_value->SetFocus();
+
     show_content();
 }
 
@@ -335,10 +327,7 @@ void LabFrame::on_select_sequence(wxCommandEvent& event) {
 }
 
 void LabFrame::on_materialize(wxCommandEvent& event) {
-    int n = get_n();
-    if (n <= 0) {
-        n = 10;
-    }
+    int n = spin_materialize->GetValue();
     auto sequence = get_active_sequence();
     Cardinal length = sequence->get_length();
     
