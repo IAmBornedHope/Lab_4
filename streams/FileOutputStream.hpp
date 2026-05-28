@@ -20,7 +20,7 @@ public:
     
     
     ~FileOutputStream() override {
-        if (!file_) {
+        if (file_) {
             fclose(file_);
             file_ = nullptr;
         }
