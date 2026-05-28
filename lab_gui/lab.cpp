@@ -54,7 +54,7 @@ LabFrame::LabFrame() : wxFrame(nullptr, wxID_ANY, wxString::FromUTF8("Лабор
     left_sizer->Add(target_selector, 0, wxEXPAND | wxALL, 5);
 
     button_concat = new wxButton(main_panel, wxID_ANY, "Concat");
-    //button_concat->Bind(wxEVT_BUTTON, &LabFrame::on_concat, this);
+    button_concat->Bind(wxEVT_BUTTON, &LabFrame::on_concat, this);
     left_sizer->Add(button_concat, 0, wxEXPAND | wxALL, 5);
 
     left_sizer->Add(new wxStaticLine(main_panel), 0, wxEXPAND | wxLEFT | wxRIGHT, 5);
@@ -68,19 +68,19 @@ LabFrame::LabFrame() : wxFrame(nullptr, wxID_ANY, wxString::FromUTF8("Лабор
     button_grid = new wxGridSizer(2, 2, 5, 5);
     
     button_take = new wxButton(main_panel, wxID_ANY, "Take");
-    //button_take->Bind(wxEVT_BUTTON, &LabFrame::on_take, this);
+    button_take->Bind(wxEVT_BUTTON, &LabFrame::on_take, this);
     button_grid->Add(button_take, 1, wxEXPAND);
 
     button_skip = new wxButton(main_panel, wxID_ANY, "Skip");
-    //button_skip->Bind(wxEVT_BUTTON, &LabFrame::on_skip, this);
+    button_skip->Bind(wxEVT_BUTTON, &LabFrame::on_skip, this);
     button_grid->Add(button_skip, 1, wxEXPAND);
 
-    button_map = new wxButton(main_panel, wxID_ANY, "Map");
-    //button_map->Bind(wxEVT_BUTTON, &LabFrame::on_map, this);
+    button_map = new wxButton(main_panel, wxID_ANY, "Map (x * 2)");
+    button_map->Bind(wxEVT_BUTTON, &LabFrame::on_map, this);
     button_grid->Add(button_map, 1, wxEXPAND);
 
-    button_where = new wxButton(main_panel, wxID_ANY, "Where");
-    //button_where->Bind(wxEVT_BUTTON, &LabFrame::on_where, this);
+    button_where = new wxButton(main_panel, wxID_ANY, wxString::FromUTF8("Where (x ⫶ 3)"));
+    button_where->Bind(wxEVT_BUTTON, &LabFrame::on_where, this);
     button_grid->Add(button_where, 1, wxEXPAND);
 
     left_sizer->Add(button_grid, 0, wxEXPAND | wxALL, 5);
@@ -98,7 +98,7 @@ LabFrame::LabFrame() : wxFrame(nullptr, wxID_ANY, wxString::FromUTF8("Лабор
 
     left_sizer->AddStretchSpacer();
 
-    status_label = new wxStaticText(main_panel, wxID_ANY, wxString::FromUTF8("Длина: 0 | Кошировано: 0"));
+    status_label = new wxStaticText(main_panel, wxID_ANY, wxString::FromUTF8("Длина: 0 | Кэшировано: 0"));
     status_label->SetFont(wxFont(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
     left_sizer->Add(status_label, 0, wxEXPAND | wxALL, 5);
 
@@ -182,7 +182,7 @@ void LabFrame::show_content() {
     }
 
     if (!length.is_infinite() && cached < length.get_size()) {
-        output_list_box->Append(wxString::Format(wxString::FromUTF8("Конечная последовательность (%zu не закошировано)"), length.get_size() - cached));
+        output_list_box->Append(wxString::Format(wxString::FromUTF8("Конечная последовательность (%zu не закэшировано)"), length.get_size() - cached));
     } else if (length.is_infinite() && cached >= limit) {
          output_list_box->Append(wxString::FromUTF8("Дальше бесконечный хвост"));
     } else if (!length.is_infinite() && cached == length.get_size()) {
@@ -219,7 +219,7 @@ void LabFrame::update_status() {
     size_t cached = sequence->get_materialized_count();
     
     wxString length_str = length.is_infinite() ? wxString::FromUTF8("Много)))") : wxString::Format(wxString::FromUTF8("%zu"), length.get_size());
-    status_label->SetLabel(wxString::Format(wxString::FromUTF8("Длина: %s\nКошировано: %zu"), length_str, cached));
+    status_label->SetLabel(wxString::Format(wxString::FromUTF8("Длина: %s\nКэшировано: %zu"), length_str, cached));
 }
 
 void LabFrame::update_operations() {
@@ -228,12 +228,20 @@ void LabFrame::update_operations() {
     bool is_infinite = length.is_infinite();
 
     if (is_infinite) {
+        spin_append->Disable();
         button_append->Disable();
+        button_clear->Enable();
+        button_materialize->Enable();
+        spin_materialize->Enable();
+        spin_take_skip->Enable();
+        button_take->Enable();
+        button_skip->Enable();
+        button_map->Enable();
+        button_where->Enable();
     }
     else {
         button_append->Enable();
     }
-
     if (!is_infinite) {
         if (length.get_size() == 0) {
             button_clear->Disable();
@@ -251,6 +259,7 @@ void LabFrame::update_operations() {
             button_materialize->Enable();
             spin_materialize->Enable();
             spin_take_skip->Enable();
+            spin_append->Enable();
             button_take->Enable();
             button_skip->Enable();
             button_map->Enable();
@@ -258,7 +267,6 @@ void LabFrame::update_operations() {
             
         }
     }
-
 }
 
 void LabFrame::update_concat() {
@@ -286,12 +294,11 @@ void LabFrame::on_create_finite(wxCommandEvent& event) {
 
 void LabFrame::on_create_infinite(wxCommandEvent& event) {
     auto fibonacci = [](const MutableArraySequence<int>& sequence) -> int {
+        if (sequence.get_length() < 2) return 1;
         return sequence[sequence.get_length() - 1] + sequence[sequence.get_length() - 2];
     };
 
     MutableArraySequence<int> cache;
-    cache.append(1);
-    cache.append(1);
 
     auto generator = std::make_shared<RecurrentGenerator<int, MutableArraySequence>>(fibonacci, cache);
     auto infinite_sequence = std::make_shared<IntLazy>(cache, generator);
@@ -310,6 +317,38 @@ void LabFrame::on_append(wxCommandEvent& event) {
     sequences.get_reference(current_sequence_id) = sequence->concat(temp_sequence);
 
     show_content();
+}
+
+void LabFrame::on_concat(wxCommandEvent& event) {
+    size_t target_id = target_selector->GetSelection();
+    auto result = sequences.get_reference(current_sequence_id)->concat(sequences.get_reference(target_id));
+    add_sequence_to_list(result);
+}
+
+void LabFrame::on_take(wxCommandEvent& event) {
+    int n = spin_take_skip->GetValue();
+    auto current_sequence = get_active_sequence();
+    auto result = current_sequence->take(n);
+    add_sequence_to_list(result);
+}
+
+void LabFrame::on_skip(wxCommandEvent& event) {
+    int n = spin_take_skip->GetValue();
+    auto current_sequence = get_active_sequence();
+    auto result = current_sequence->skip(n);
+    add_sequence_to_list(result);
+}
+
+void LabFrame::on_map(wxCommandEvent& event) {
+    auto current_sequence = get_active_sequence();
+    auto result = current_sequence->map<int>([](int x) { return x * 2; });
+    add_sequence_to_list(result);
+}
+
+void LabFrame::on_where(wxCommandEvent& event) {
+    auto current_sequence = get_active_sequence();
+    auto result = current_sequence->where([](int x) { return x % 3 == 0; });
+    add_sequence_to_list(result);
 }
 
 void LabFrame::on_clear(wxCommandEvent& event) {

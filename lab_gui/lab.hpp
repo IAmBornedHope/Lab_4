@@ -54,6 +54,8 @@ private:
     void on_skip(wxCommandEvent& event);
     void on_clear(wxCommandEvent& event);
     void on_append(wxCommandEvent& event);
+    void on_map(wxCommandEvent& event);
+    void on_where(wxCommandEvent& event);
     void on_select_sequence(wxCommandEvent& event);  
     void on_select_target(wxCommandEvent& event);   
     
@@ -66,7 +68,7 @@ private:
     void update_concat();
     
     void add_sequence_to_list(const std::shared_ptr<IntLazy>& new_seq);
-    
+
     std::shared_ptr<IntLazy>& get_active_sequence();
     std::shared_ptr<IntLazy>& get_target_sequence();
 };
