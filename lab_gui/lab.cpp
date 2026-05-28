@@ -33,7 +33,7 @@ LabFrame::LabFrame() : wxFrame(nullptr, wxID_ANY, wxString::FromUTF8("Лабор
 
     // Вставка и очистка
     left_sizer->Add(new wxStaticText(main_panel, wxID_ANY, wxString::FromUTF8("Вставить в конец")), 0, wxLEFT | wxTOP, 5);
-    spin_append = new wxSpinCtrl(main_panel, wxID_ANY, wxT("10"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, INT_MIN, INT_MAX, 0);
+    spin_append = new wxSpinCtrl(main_panel, wxID_ANY, wxT("0"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, INT_MIN, INT_MAX, 0);
     left_sizer->Add(spin_append, 0, wxEXPAND | wxALL, 5);
 
     button_append = new wxButton(main_panel, wxID_ANY, "Append");
@@ -98,7 +98,7 @@ LabFrame::LabFrame() : wxFrame(nullptr, wxID_ANY, wxString::FromUTF8("Лабор
 
     left_sizer->AddStretchSpacer();
 
-    status_label = new wxStaticText(main_panel, wxID_ANY, wxString::FromUTF8("Длина: 0 | Кэшировано: 0"));
+    status_label = new wxStaticText(main_panel, wxID_ANY, wxString::FromUTF8("Длина: 0 | Кошировано: 0"));
     status_label->SetFont(wxFont(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
     left_sizer->Add(status_label, 0, wxEXPAND | wxALL, 5);
 
@@ -167,23 +167,22 @@ void LabFrame::show_content() {
             return;
         }
     }
-    size_t limit = std::min(cached, static_cast<size_t>(100));
     
-    for(size_t index = 0; index < limit; ++index) {
+    for(size_t index = 0; index < cached; ++index) {
         int temp = std::to_string(sequence->get(Cardinal(index))).length();
         if(static_cast<size_t>(temp) > max_elem_length) {
             max_elem_length = static_cast<size_t>(temp);
         }
     }
 
-    for (size_t index = 0; index < limit; ++index) {
+    for (size_t index = 0; index < cached; ++index) {
         int value = sequence->get(Cardinal(index));
         output_list_box->Append(wxString::Format(wxString::FromUTF8(" [%03zu]  | %*d |"), index, static_cast<int>(max_elem_length), value));
     }
 
     if (!length.is_infinite() && cached < length.get_size()) {
-        output_list_box->Append(wxString::Format(wxString::FromUTF8("Конечная последовательность (%zu не закэшировано)"), length.get_size() - cached));
-    } else if (length.is_infinite() && cached >= limit) {
+        output_list_box->Append(wxString::Format(wxString::FromUTF8("Конечная последовательность (%zu не закошировано)"), length.get_size() - cached));
+    } else if (length.is_infinite()) {
          output_list_box->Append(wxString::FromUTF8("Дальше бесконечный хвост"));
     } else if (!length.is_infinite() && cached == length.get_size()) {
         output_list_box->Append(wxString::FromUTF8("Кеш кончился"));
@@ -219,7 +218,7 @@ void LabFrame::update_status() {
     size_t cached = sequence->get_materialized_count();
     
     wxString length_str = length.is_infinite() ? wxString::FromUTF8("Много)))") : wxString::Format(wxString::FromUTF8("%zu"), length.get_size());
-    status_label->SetLabel(wxString::Format(wxString::FromUTF8("Длина: %s\nКэшировано: %zu"), length_str, cached));
+    status_label->SetLabel(wxString::Format(wxString::FromUTF8("Длина: %s\nКошировано: %zu"), length_str, cached));
 }
 
 void LabFrame::update_operations() {
@@ -315,6 +314,7 @@ void LabFrame::on_append(wxCommandEvent& event) {
     auto temp_sequence = std::make_shared<IntLazy>(generator);
 
     sequences.get_reference(current_sequence_id) = sequence->concat(temp_sequence);
+    spin_append->SetFocus();
 
     show_content();
 }
