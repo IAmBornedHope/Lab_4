@@ -18,7 +18,7 @@ public:
 
     T read() override {
         if (!has_next()) {
-            throw EmptyListException();
+            throw EndOfStreamException();
         }
         return stream_->read();
     }

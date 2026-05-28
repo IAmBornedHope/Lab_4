@@ -27,7 +27,7 @@ public:
 
     T read() override {
         if (!has_next()) {
-            throw EmptyListException();
+            throw EndOfStreamException();
         }
         T value = sequence_->get(Cardinal(current_));
         ++current_;

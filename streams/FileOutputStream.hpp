@@ -14,7 +14,7 @@ public:
         : serializer_{serializer}, separator_{separator} {
             file_ = fopen(filename.c_str(), "w");
             if (!file_) {
-                throw EmptyListException();
+                throw FileOpenException(filename);
             }
         }
     
@@ -28,7 +28,7 @@ public:
 
     void write(const T& value) override {
         if (!file_) {
-            throw EmptyListException();
+            throw EndOfStreamException();
         }
 
         std::string string_value = serializer_(value);

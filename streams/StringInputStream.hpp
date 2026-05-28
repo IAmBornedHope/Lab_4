@@ -19,7 +19,7 @@ public:
 
     T read() override {
         if (!has_next()) {
-            throw EmptyListException();
+            throw EndOfStreamException();
         }
         std::string token;
         size_t separator_pos = string_.find(separator_);

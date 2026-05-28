@@ -12,7 +12,7 @@ public:
 
     void write(const T& value) override {
         if (!stream_) {
-            throw EmptyListException();
+            throw EndOfStreamException);
         }
         stream_->write(value);
     }

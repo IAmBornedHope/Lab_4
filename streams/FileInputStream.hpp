@@ -30,7 +30,7 @@ public:
         : deserializer_{deserializer}, separator_{separator} {
             file_ = fopen(filename.c_str(), "r");
             if (!file_) {
-                throw EmptyListException();
+                throw FileOpenException(filename);
             }
             fill_buffer();
         }
