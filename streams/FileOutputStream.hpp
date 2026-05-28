@@ -33,6 +33,7 @@ public:
 
         std::string string_value = serializer_(value);
         fprintf(file_, "%s", string_value.c_str());
+        fprintf(file_, "%s", separator_.c_str());
 
     }
 };
