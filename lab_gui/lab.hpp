@@ -51,6 +51,7 @@ private:
     void on_concat(wxCommandEvent& event);
     void on_take(wxCommandEvent& event);
     void on_skip(wxCommandEvent& event);
+    void on_append(wxCommandEvent& event);
     void on_select_sequence(wxCommandEvent& event);  
     void on_select_target(wxCommandEvent& event);   
     
@@ -59,11 +60,15 @@ private:
     void update_comboboxes();
     void show_content(); 
     void update_status();
+    void update_operations();
+    void update_concat();
     
     void add_sequence_to_list(const std::shared_ptr<IntLazy>& new_seq);
     int get_n();
-    
+    int get_append_value();
+
     std::shared_ptr<IntLazy>& get_active_sequence();
+    std::shared_ptr<IntLazy>& get_target_sequence();
 };
 
 int run_gui_new();

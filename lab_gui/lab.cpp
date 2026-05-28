@@ -39,7 +39,7 @@ LabFrame::LabFrame() : wxFrame(nullptr, wxID_ANY, wxString::FromUTF8("Лабор
     left_sizer->Add(input_append_value, 0, wxEXPAND | wxALL, 5);
 
     button_append = new wxButton(main_panel, wxID_ANY, "Append");
-    //button_append->Bind(wxEVT_BUTTON, &LabFrame::on_append, this);
+    button_append->Bind(wxEVT_BUTTON, &LabFrame::on_append, this);
     left_sizer->Add(button_append, 0, wxEXPAND | wxALL, 5);
 
     button_clear = new wxButton(main_panel, wxID_ANY, "Clear");
@@ -52,7 +52,7 @@ LabFrame::LabFrame() : wxFrame(nullptr, wxID_ANY, wxString::FromUTF8("Лабор
     left_sizer->Add(new wxStaticText(main_panel, wxID_ANY, wxString::FromUTF8("Цель для конкатенации:")), 0, wxLEFT | wxTOP, 5);
 
     target_selector = new wxComboBox(main_panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0, nullptr, wxCB_READONLY);
-    //target_selector->Bind(wxEVT_COMBOBOX, &LabFrame::on_select_target, this);
+    target_selector->Bind(wxEVT_COMBOBOX, &LabFrame::on_select_target, this);
     left_sizer->Add(target_selector, 0, wxEXPAND | wxALL, 5);
 
     button_concat = new wxButton(main_panel, wxID_ANY, "Concat");
@@ -124,11 +124,16 @@ LabFrame::~LabFrame() {}
 
 void LabFrame::update_comboboxes() {
     int active_index = object_selector->GetSelection();
+    int target_index = target_selector->GetSelection();
     object_selector->Clear();
+    target_selector->Clear();
 
     size_t count = sequences.get_length();
     for (size_t number = 0; number < count; ++number) {
-        object_selector->Append(wxString::Format(wxString::FromUTF8("Sequence №%zu"), number + 1));
+        wxString name = wxString::Format(wxString::FromUTF8("Sequence №%zu"), number + 1);
+        object_selector->Append(name);
+        target_selector->Append(name);
+
     }
     if (active_index < count) {
         object_selector->SetSelection(active_index);
@@ -137,6 +142,10 @@ void LabFrame::update_comboboxes() {
         object_selector->SetSelection(0);
         current_sequence_id = 0;
     }
+
+    target_selector->SetSelection(target_index);
+    update_concat();
+    
 }
 
 void LabFrame::show_content() {
@@ -144,6 +153,8 @@ void LabFrame::show_content() {
     output_list_box->Clear();
     auto sequence = get_active_sequence();
     update_status();
+    update_operations();
+    update_concat();        
 
     Cardinal length = sequence->get_length();
     size_t cached = sequence->get_materialized_count();
@@ -196,6 +207,14 @@ std::shared_ptr<IntLazy>& LabFrame::get_active_sequence() {
     return sequences.get_reference(current_sequence_id);
 }
 
+std::shared_ptr<IntLazy>& LabFrame::get_target_sequence() {
+    size_t target_id = target_selector->GetSelection();
+    if (target_id == wxNOT_FOUND || target_id >= sequences.get_length()) {
+        return get_active_sequence();
+    }
+    return sequences.get_reference(target_id);
+}
+
 int LabFrame::get_n() {
     long value;
     if (!input_param->GetValue().ToLong(&value)) {
@@ -213,13 +232,48 @@ void LabFrame::update_status() {
     status_label->SetLabel(wxString::Format(wxString::FromUTF8("Длина: %s\nКошировано: %zu"), length_str, cached));
 }
 
+void LabFrame::update_operations() {
+    auto sequence = get_active_sequence();
+    Cardinal length = sequence->get_length();
+    bool is_infinite = length.is_infinite();
+
+    if (is_infinite) {
+        button_append->Disable();
+    }
+    else {
+        button_append->Enable();
+    }
+
+    if (!is_infinite) {
+        if (length.get_size() == 0) {
+            button_clear->Disable();
+        }
+        else {
+            button_clear->Enable();
+        }
+    }
+    button_take->Enable();
+    button_skip->Enable();
+    button_map->Enable();
+    button_where->Enable();
+}
+
+void LabFrame::update_concat() {
+    if (target_selector->GetSelection() == object_selector->GetSelection() || target_selector->GetSelection() == wxNOT_FOUND) {
+        button_concat->Disable();
+    }
+    else {
+        button_concat->Enable();
+    }
+}
+
 void LabFrame::on_create_finite(wxCommandEvent& event) {
     int n = get_n();
-    if (n <= 0) {
+    if (n < 0) {
         n = 10;
     }
     auto array = std::make_shared<MutableArraySequence<int>>();
-    for(size_t count = 1; count <= n; ++count) {
+    for(size_t count = 0; count < n; ++count) {
         array->append(count);
     }
 
@@ -241,6 +295,33 @@ void LabFrame::on_create_infinite(wxCommandEvent& event) {
     auto generator = std::make_shared<RecurrentGenerator<int, MutableArraySequence>>(fibonacci, cache);
     auto infinite_sequence = std::make_shared<IntLazy>(cache, generator);
     add_sequence_to_list(infinite_sequence);
+}
+
+int LabFrame:: get_append_value() {
+    int value;
+    if (!input_append_value->GetValue().ToInt(&value)) {
+        return 0;
+    }
+    return value;
+}
+
+void LabFrame::on_append(wxCommandEvent& event) {
+    int value = get_append_value();
+    auto sequence = get_active_sequence();
+
+    auto new_elem = std::make_shared<MutableArraySequence<int>>();
+    new_elem->append(value);
+    auto generator = std::make_shared<ContainerGenerator<int, MutableArraySequence>>(*new_elem);
+    auto temp_sequence = std::make_shared<IntLazy>(generator);
+
+    sequences.get_reference(current_sequence_id) = sequence->concat(temp_sequence);
+    input_append_value->SelectAll();
+    input_append_value->SetFocus();
+    show_content();
+}
+
+void LabFrame::on_select_target(wxCommandEvent& event) {
+    update_concat();
 }
 
 void LabFrame::on_select_sequence(wxCommandEvent& event) {
