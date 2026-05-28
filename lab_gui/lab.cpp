@@ -320,6 +320,11 @@ void LabFrame::on_append(wxCommandEvent& event) {
     show_content();
 }
 
+void LabFrame::on_clear(wxCommandEvent& event) {
+    sequences.get_reference(current_sequence_id) = std::make_shared<IntLazy>();
+    show_content();
+}
+
 void LabFrame::on_select_target(wxCommandEvent& event) {
     update_concat();
 }

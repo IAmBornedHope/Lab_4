@@ -51,6 +51,7 @@ private:
     void on_concat(wxCommandEvent& event);
     void on_take(wxCommandEvent& event);
     void on_skip(wxCommandEvent& event);
+    void on_clear(wxCommandEvent& event);
     void on_append(wxCommandEvent& event);
     void on_select_sequence(wxCommandEvent& event);  
     void on_select_target(wxCommandEvent& event);   
